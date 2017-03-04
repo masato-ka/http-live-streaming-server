@@ -6,10 +6,20 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
+import com.masato.ka.hls.service.HttpLiveStreamingEncoder;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class AudioWebSocketHandler extends BinaryWebSocketHandler {
 
+	private final HttpLiveStreamingEncoder hlsEncoder;
+	
+	public AudioWebSocketHandler(HttpLiveStreamingEncoder hlsEncoder){
+		this.hlsEncoder = hlsEncoder;
+	}
+	
 	/**
 	 * 接続後処理
 	 * 接続後、オーディオ情報格納領域を確保する。
@@ -17,7 +27,7 @@ public class AudioWebSocketHandler extends BinaryWebSocketHandler {
 	 */
 	@Override
 	public void afterConnectionEstablished(WebSocketSession session) throws Exception{
-		
+		log.info("established connection:" + session.getId());
 	}
 	
 	/**
@@ -29,7 +39,7 @@ public class AudioWebSocketHandler extends BinaryWebSocketHandler {
 	@Override
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status)
 		throws Exception{
-		
+		log.info("close session");
 	}
 	
 	/**
@@ -40,7 +50,10 @@ public class AudioWebSocketHandler extends BinaryWebSocketHandler {
 	 */
 	@Override
 	public void handleBinaryMessage(WebSocketSession session, BinaryMessage message){
-		
+		byte[] buffer = new byte[message.getPayloadLength()];
+		message.getPayload().get(buffer);
+		hlsEncoder.writeStreaming(buffer);
+		hlsEncoder.flushWaveFile();
 	}
 	
 }
