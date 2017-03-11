@@ -5,7 +5,7 @@ import org.springframework.boot.context.embedded.MimeMappings;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class MineMapper implements EmbeddedServletContainerCustomizer {
+public class MineMapperConfigration implements EmbeddedServletContainerCustomizer {
 
 	@Override
 	public void customize(ConfigurableEmbeddedServletContainer container) {
