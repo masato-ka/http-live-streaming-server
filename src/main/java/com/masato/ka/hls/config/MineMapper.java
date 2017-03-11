@@ -1,4 +1,4 @@
-package com.masato.ka.hls;
+package com.masato.ka.hls.config;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.MimeMappings;

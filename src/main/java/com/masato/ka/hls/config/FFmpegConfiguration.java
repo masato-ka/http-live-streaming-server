@@ -1,4 +1,4 @@
-package com.masato.ka.hls;
+package com.masato.ka.hls.config;
 
 import java.io.IOException;
 
