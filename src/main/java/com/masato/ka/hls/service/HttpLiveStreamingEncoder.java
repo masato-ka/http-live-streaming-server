@@ -1,9 +1,17 @@
 package com.masato.ka.hls.service;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -16,10 +24,21 @@ import org.springframework.stereotype.Service;
 import com.masato.ka.hls.model.AudioFile;
 
 import lombok.extern.slf4j.Slf4j;
+import net.bramp.ffmpeg.FFmpegExecutor;
+import net.bramp.ffmpeg.builder.FFmpegBuilder;
 
 @Slf4j
 @Service
 public class HttpLiveStreamingEncoder {
+	
+	private final FFmpegExecutor executor;
+	private final String audioPath="static/audio/";
+	private Integer segmentNumber = 0;
+	public HttpLiveStreamingEncoder(FFmpegExecutor ffmpegExecutor){
+		executor = ffmpegExecutor;
+	}
+	
+	
 	private final int BUFSIZE = 1 <<4;
 	private int writePointer = 0;
 	private int readPointer = 0;
@@ -55,16 +74,70 @@ public class HttpLiveStreamingEncoder {
 		AudioInputStream audioInputStream = 
 				new AudioInputStream(inputStream, audioFormat, audioData.length);
 		AudioFileFormat.Type type = AudioFileFormat.Type.WAVE;
-		File sound = new File(fileName+".wav");
+		File sound = new File(audioPath+fileName+".wav");
 		try {
 			AudioSystem.write(audioInputStream, type, sound);
 		} catch (IOException e) {
 			log.error("failed write sound file.");
 			e.printStackTrace();
 		}
-		log.info("flush file");
 		readPointer += 1;
-		
+		encodeToAAC(audioPath+fileName+".wav",audioPath+fileName+".aac");
+		publishTS(audioPath+fileName + ".aac");
+		rebuildManifest();
+		log.info("flush file");
+	}
+	
+	private void encodeToAAC(String inputFileName, String outputFileName){
+		FFmpegBuilder builder = new FFmpegBuilder()
+				.setInput(inputFileName)
+				.overrideOutputFiles(true)
+				.addOutput(outputFileName)
+			    .setAudioCodec("aac")        
+			    .setAudioBitRate(128000)     
+			    .done();
+		executor.createJob(builder).run();
 	}
 
+	private void publishTS(String inputFileName){
+
+		FFmpegBuilder builder = new FFmpegBuilder()
+				.setInput(inputFileName)
+				.addOutput(audioPath+"output.m3u8")
+				.setAudioCodec("copy")
+				.addExtraArgs("-hls_list_size", "0")
+				.addExtraArgs("-hls_time","9")
+				.addExtraArgs("-start_number", "0")
+				.addExtraArgs("-hls_playlist_type", "event")
+				.addExtraArgs("-hls_flags", "append_list")
+				.done();
+		executor.createJob(builder).run();	    
+		segmentNumber += 4;
+	}
+	
+	private void rebuildManifest(){
+		List<String> lines = new ArrayList<>();
+		try(BufferedReader reader = new BufferedReader(
+				new InputStreamReader(new FileInputStream(audioPath+"output.m3u8"),"UTF-8"))){
+			String line=null;
+			while((line = reader.readLine()) != null){
+				lines.add(line);
+			}
+		}catch(IOException e){
+			log.error("failed read file.");
+		}
+		try(BufferedWriter writer = new BufferedWriter(
+				new OutputStreamWriter(new FileOutputStream(audioPath+"sample.m3u8"),"UTF-8"))){
+			
+			for(int i=0; i < lines.size()-1;++i){
+				writer.write(lines.get(i));
+				writer.newLine();
+			}
+				
+		}catch(IOException e){
+			log.error("failed write file.");
+		}
+		
+	}
+	
 }

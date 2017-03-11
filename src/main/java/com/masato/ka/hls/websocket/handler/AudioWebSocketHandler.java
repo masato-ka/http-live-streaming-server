@@ -40,6 +40,7 @@ public class AudioWebSocketHandler extends BinaryWebSocketHandler {
 	public void afterConnectionClosed(WebSocketSession session, CloseStatus status)
 		throws Exception{
 		log.info("close session");
+		//TODO ファイルの削除と出力してない情報の削除
 	}
 	
 	/**
