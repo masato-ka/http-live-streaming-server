@@ -28,7 +28,7 @@ public class AudioFile {
 	 * @return コピーされなかったバッファのサイズ
 	 */
 	public int copyAudioData(byte[] data){
-	
+
 		int writeSize = remainBufferSize > data.length ? 
 					data.length : remainBufferSize;
 		System.arraycopy(data, 0, rawAudioData, bufferSize, writeSize);

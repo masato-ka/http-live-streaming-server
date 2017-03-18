@@ -19,6 +19,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.masato.ka.hls.model.AudioFile;
@@ -32,8 +33,11 @@ import net.bramp.ffmpeg.builder.FFmpegBuilder;
 public class HttpLiveStreamingEncoder {
 	
 	private final FFmpegExecutor executor;
-	private final String audioPath="static/audio/";
+	
+    @Value("{hls.audio.path:static/audio/}")
+	private String audioPath;
 	private Integer segmentNumber = 0;
+	
 	public HttpLiveStreamingEncoder(FFmpegExecutor ffmpegExecutor){
 		executor = ffmpegExecutor;
 	}
