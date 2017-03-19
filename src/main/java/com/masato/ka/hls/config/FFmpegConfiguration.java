@@ -14,9 +14,9 @@ import net.bramp.ffmpeg.FFprobe;
 @Configuration
 public class FFmpegConfiguration {
 
-	@Value("{ffmpeg.ffmpeg:/usr/local/bin/ffmpeg}")
+	@Value("${ffmpeg.ffmpeg:/usr/local/bin/ffmpeg}")
 	private String ffmpegBinaryPath;
-	@Value("{ffmpeg.ffprobe:/usr/local/bin/ffprobe}")
+	@Value("${ffmpeg.ffprobe:/usr/local/bin/ffprobe}")
 	private String ffprobeBinaryPath;
 	
     @Bean

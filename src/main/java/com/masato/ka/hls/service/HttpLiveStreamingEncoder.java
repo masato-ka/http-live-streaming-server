@@ -34,7 +34,7 @@ public class HttpLiveStreamingEncoder {
 	
 	private final FFmpegExecutor executor;
 	
-    @Value("{hls.audio.path:static/audio/}")
+    @Value("${hls.audio.path:static/audio/}")
 	private String audioPath;
 	private Integer segmentNumber = 0;
 	
